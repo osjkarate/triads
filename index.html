@@ -144,53 +144,6 @@
         { label: "Diminished",  rootOffset: 11, offsets: [0, 3, 6] }  // Blir B Diminished Triad
     ];
 
-    // High Fidelity Web Audio Synthesis Modules
-    let audioCtx = null;
-    function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-    }
-
-    function playBassTone(frequency) {
-        initAudio();
-        if (!frequency) return;
-        
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        const filter = audioCtx.createBiquadFilter();
-        
-        osc.type = 'triangle'; 
-        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-        
-        const biteOsc = audioCtx.createOscillator();
-        const biteGain = audioCtx.createGain();
-        biteOsc.type = 'sawtooth';
-        biteOsc.frequency.setValueAtTime(frequency * 2, audioCtx.currentTime);
-        biteGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(320, audioCtx.currentTime); 
-        
-        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.4);
-        biteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-        
-        osc.connect(gainNode);
-        biteOsc.connect(biteGain);
-        gainNode.connect(filter);
-        biteGain.connect(filter);
-        filter.connect(audioCtx.destination);
-        
-        osc.start();
-        biteOsc.start();
-        osc.stop(audioCtx.currentTime + 1.5);
-        biteOsc.stop(audioCtx.currentTime + 1.5);
-    }
-
     function getNoteName(chromaticIndex) {
         const normalized = ((chromaticIndex % 12) + 12) % 12;
         return state.notation === "sharps" ? SHARPS[normalized] : FLATS[normalized];
@@ -374,7 +327,7 @@
     // Expose Shared Namespace Layer
     window.BassEngine = {
         state, SHARPS, FLATS, BASS_STRINGS, TOTAL_FRETS, CIRCLE_OF_FOURTHS, TRIAD_MODES_FLOW,
-        playBassTone, getNoteName, getPitchFrequency, findPitchIndexByName, renderFretboard
+        getNoteName, findPitchIndexByName, renderFretboard
     };
 })();
 </script>
@@ -600,10 +553,6 @@
     window.handleFretboardClick = function(stringIdx, fret) {
         const selectedString = E.BASS_STRINGS[stringIdx];
         const noteName = E.getNoteName(selectedString.openIdx + fret);
-        const freq = E.getPitchFrequency(selectedString.openIdx, fret, selectedString.octave);
-
-        E.playBassTone(freq);
-        if (E.state.mode !== "triads") pulseFretboardNode(stringIdx, fret);
 
         if (E.state.mode === "findNote") {
             if (noteName === E.state.currentTarget.note) {
