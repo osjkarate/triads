@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LowEnd Master: Blind 20-Fret Bass Trainer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght=400;700&family=Plus+Jakarta+Sans:wght=400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f19; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased select-none">
+
+    <!-- Header Block -->
+    <header class="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <svg class="w-6 h-6 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-slate-50 to-slate-300 bg-clip-text text-transparent">LowEnd Master</h1>
+                    <p class="text-xs text-emerald-400 font-semibold tracking-wider uppercase mono">Blind 20-Fret Engine</p>
+                </div>
+            </div>
+            
+            <!-- Controls Section -->
+            <div class="flex flex-wrap items-center gap-3">
+                <select id="modeSelect" class="bg-slate-900 border border-slate-700/60 rounded-xl px-4 py-2 text-sm font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors shadow-inner">
+                    <option value="triads">Mode: Single String Triads</option>
+                    <option value="findNote">Mode: Find the Note</option>
+                    <option value="nameNote">Mode: Name the Note</option>
+                </select>
+                <select id="accidentalsSelect" class="bg-slate-900 border border-slate-700/60 rounded-xl px-4 py-2 text-sm font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors shadow-inner">
+                    <option value="sharps">Notation: ♯ Sharps</option>
+                    <option value="flats">Notation: ♭ Flats</option>
+                </select>
+                <button id="resetStatsBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all border border-slate-700/40 hover:border-slate-600 flex items-center gap-2">
+                    Reset Session
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Workspace -->
+    <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-1 flex flex-col gap-6 justify-center">
+        
+        <!-- Billboard Dashboard Status System -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Prompt / Objective Box -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 md:col-span-2 flex flex-col justify-between shadow-xl relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-50"></div>
+                <div class="relative z-10">
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase mono block mb-1" id="promptLabel">Current Target</span>
+                    <div class="flex items-baseline gap-3">
+                        <span id="targetPrompt" class="text-4xl md:text-5xl font-black text-white tracking-tight">--</span>
+                        <span id="targetSubprompt" class="text-emerald-400 font-semibold text-sm"></span>
+                    </div>
+                </div>
+                <div id="instructionText" class="text-xs text-slate-400 mt-4 relative z-10 border-t border-slate-800/80 pt-2">
+                    Select correct fret locations on the fingerboard mapping layout.
+                </div>
+            </div>
+
+            <!-- Score Dashboard -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between shadow-xl">
+                <div>
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase mono block mb-1">Accuracy Tracker</span>
+                    <div class="text-3xl font-black text-slate-100 tracking-tight" id="scoreDisplay">0 <span class="text-slate-500 text-lg font-medium">/ 0</span></div>
+                </div>
+                <div class="mt-4">
+                    <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div id="accuracyBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-[11px] font-medium text-slate-400 mt-1.5 mono">
+                        <span>Success Rate:</span>
+                        <span id="accuracyPercent" class="text-emerald-400">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contextual Assistant Dashboard -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between shadow-xl relative overflow-hidden">
+                <div>
+                    <span class="text-xs font-bold tracking-wider text-slate-400 uppercase mono block mb-1">Routine Status</span>
+                    <div id="routineName" class="text-base font-bold text-slate-200 line-clamp-1">Loading Engine...</div>
+                    <p id="routineDetail" class="text-xs text-slate-400 mt-1">Standard setup active.</p>
+                </div>
+                <div id="streakBadge" class="hidden mt-3 items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-lg border border-emerald-500/20 w-max">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    STREAK: <span id="streakCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Fretboard Visual Frame Container -->
+        <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 shadow-2xl relative">
+            <div class="w-full overflow-x-auto overflow-y-hidden pb-2">
+                <div class="min-w-[1200px] relative" id="fretboardContainer">
+                    <!-- Scalable SVG Fretboard Component Object Render Engine -->
+                    <svg id="fretboardSvg" viewBox="0 0 1400 240" class="w-full h-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]"></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Feedback Overlay Banner (REPOSITIONED BELOW THE FRETBOARD) -->
+        <div id="feedbackBanner" class="invisible rounded-xl p-3 text-center text-sm font-semibold shadow-md min-h-[44px] transition-all duration-300"></div>
+
+        <!-- Interactive Multiple Choice Input Menu Block -->
+        <div id="choiceContainer" class="hidden bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 flex-col items-center gap-4 transition-all shadow-xl">
+            <span class="text-xs font-bold tracking-wider text-slate-400 uppercase mono block">Select the matching pitch identity</span>
+            <div id="choiceButtons" class="flex flex-wrap justify-center gap-3 w-full max-w-xl">
+                <!-- Injected via JavaScript Core Engine dynamically -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- UI Footer Branding -->
+    <footer class="border-t border-slate-900/60 bg-slate-950/80 py-4 px-6 text-center text-xs text-slate-500 mono">
+        LowEnd Master Framework v2.6.4 • Stable 20-Fret Interactivity System
+    </footer>
+
+<script>
+(function() {
+    // Note Management Domain Arrays
+    const SHARPS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const FLATS  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+    
+    // Standard Electric 4-String Bass Configuration Layout Mapping
+    const BASS_STRINGS = [
+        { name: "G", openIdx: 7, octave: 2 },
+        { name: "D", openIdx: 2, octave: 2 },
+        { name: "A", openIdx: 9, octave: 1 },
+        { name: "E", openIdx: 4, octave: 1 }
+    ];
+    const TOTAL_FRETS = 20;
+
+    // App State Configuration Definition Vector
+    let state = {
+        mode: "triads", // DEFAULT TO TRIADS MODE AS REQUESTED
+        notation: "sharps",
+        score: { correct: 0, total: 0 },
+        streak: 0,
+        currentTarget: null,
+        activeStringIdx: 3,  // Start on lowest visual E-string (index 3)
+        triadIndex: 0,       
+        chordTypeIndex: 0,   // 0 = Major, 1 = Minor
+        triadClickStep: 0,   
+        triadTargetPositions: [] 
+    };
+
+    // COMPLETE 15-STEP CIRCLE OF FOURTHS (Exhaustive Enharmonic Representation Layout)
+    const CIRCLE_OF_FOURTHS = ["C", "F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb", "C#", "F#", "B", "E", "A", "D", "G"];
+
+    // UPPDATERAD: Flyttar grundtonen diatoniskt utifrån cirkeln (I = 0, vi = 9, vii° = 11 halvtonsteg)
+    const TRIAD_MODES_FLOW  = [
+        { label: "Major",       rootOffset: 0,  offsets: [0, 4, 7] }, // Blir C Major Triad
+        { label: "Minor",       rootOffset: 9,  offsets: [0, 3, 7] }, // Blir A Minor Triad
+        { label: "Diminished",  rootOffset: 11, offsets: [0, 3, 6] }  // Blir B Diminished Triad
+    ];
+
+    // High Fidelity Web Audio Synthesis Modules
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playBassTone(frequency) {
+        initAudio();
+        if (!frequency) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        
+        osc.type = 'triangle'; 
+        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        
+        const biteOsc = audioCtx.createOscillator();
+        const biteGain = audioCtx.createGain();
+        biteOsc.type = 'sawtooth';
+        biteOsc.frequency.setValueAtTime(frequency * 2, audioCtx.currentTime);
+        biteGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(320, audioCtx.currentTime); 
+        
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.4);
+        biteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+        
+        osc.connect(gainNode);
+        biteOsc.connect(biteGain);
+        gainNode.connect(filter);
+        biteGain.connect(filter);
+        filter.connect(audioCtx.destination);
+        
+        osc.start();
+        biteOsc.start();
+        osc.stop(audioCtx.currentTime + 1.5);
+        biteOsc.stop(audioCtx.currentTime + 1.5);
+    }
+
+    function getNoteName(chromaticIndex) {
+        const normalized = ((chromaticIndex % 12) + 12) % 12;
+        return state.notation === "sharps" ? SHARPS[normalized] : FLATS[normalized];
+    }
+
+    function getPitchFrequency(stringOpenIdx, fret, openOctave) {
+        const absoluteSemitonesFromC0 = openOctave * 12 + stringOpenIdx + fret;
+        return 16.35160 * Math.pow(2, absoluteSemitonesFromC0 / 12);
+    }
+
+    function findPitchIndexByName(noteName) {
+        let index = SHARPS.indexOf(noteName);
+        if (index === -1) index = FLATS.indexOf(noteName);
+        return index;
+    }
+
+    // Vector Graphics Fretboard Core Rendering Module
+    function renderFretboard() {
+        const svg = document.getElementById("fretboardSvg");
+        svg.innerHTML = ""; 
+        
+        const width = 1400; 
+        const height = 240;
+        const paddingLeft = 50;
+        const paddingTop = 20;
+        const boardWidth = width - paddingLeft - 20;
+        const boardHeight = height - (paddingTop * 2);
+        
+        let fretPositions = [0];
+        let remainingLength = boardWidth;
+        for (let i = 1; i <= TOTAL_FRETS; i++) {
+            let currentFretLength = remainingLength * 0.054; 
+            fretPositions.push(fretPositions[i-1] + currentFretLength);
+            remainingLength -= currentFretLength;
+        }
+        
+        const scaleFactor = boardWidth / fretPositions[TOTAL_FRETS];
+        fretPositions = fretPositions.map(p => paddingLeft + (p * scaleFactor));
+
+        // Draw Wood Board Backdrop Frame
+        const neckRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        neckRect.setAttribute("x", paddingLeft);
+        neckRect.setAttribute("y", paddingTop);
+        neckRect.setAttribute("width", boardWidth);
+        neckRect.setAttribute("height", boardHeight);
+        neckRect.setAttribute("fill", "#1e2536");
+        neckRect.setAttribute("rx", "4");
+        svg.appendChild(neckRect);
+
+        // REPAIRED SYSTEM: Explicitly declared position markers array context
+        const markerFrets = [3, 5, 7, 9, 12, 15, 17, 19];
+        markerFrets.forEach(f => {
+            if (f > TOTAL_FRETS) return;
+            const x1 = fretPositions[f-1];
+            const x2 = fretPositions[f];
+            const midX = x1 + (x2 - x1) / 2;
+            const midY = paddingTop + boardHeight / 2;
+            
+            if (f === 12) {
+                const offset = 22;
+                createDot(svg, midX, midY - offset, "#334155");
+                createDot(svg, midX, my = midY + offset, "#334155");
+            } else {
+                createDot(svg, midX, midY, "#334155");
+            }
+        });
+
+        // Generate Fret Nickel Bars Lines
+        for(let i = 0; i <= TOTAL_FRETS; i++) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", fretPositions[i]);
+            line.setAttribute("y1", paddingTop);
+            line.setAttribute("x2", fretPositions[i]);
+            line.setAttribute("y2", paddingTop + boardHeight);
+            
+            if (i === 0) {
+                line.setAttribute("stroke", "#94a3b8"); 
+                line.setAttribute("stroke-width", "5");
+            } else {
+                line.setAttribute("stroke", "#475569");
+                line.setAttribute("stroke-width", "2");
+            }
+            svg.appendChild(line);
+        }
+
+        // Render Physical Gauge Bass Strings Layout Channels
+        const stringGap = boardHeight / (BASS_STRINGS.length - 1);
+        BASS_STRINGS.forEach((str, sIdx) => {
+            const yPos = paddingTop + (sIdx * stringGap);
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", paddingLeft - 25);
+            line.setAttribute("y1", yPos);
+            line.setAttribute("x2", width - 20);
+            line.setAttribute("y2", yPos);
+            line.setAttribute("stroke", "#cbd5e1");
+            line.setAttribute("stroke-width", 2 + (3 - sIdx) * 0.8); 
+            svg.appendChild(line);
+
+            // Left Open String Hitting Zones
+            const openGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            openGroup.setAttribute("class", "cursor-pointer select-none");
+            openGroup.addEventListener("click", () => handleFretboardClick(sIdx, 0));
+
+            const openCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            openCircle.setAttribute("cx", paddingLeft - 22);
+            openCircle.setAttribute("cy", yPos);
+            openCircle.setAttribute("r", "14");
+            openCircle.setAttribute("fill", "#0f172a");
+            openCircle.setAttribute("stroke", "#334155");
+            openCircle.setAttribute("stroke-width", "2");
+            openCircle.setAttribute("id", `node-${sIdx}-0-bg`);
+            openGroup.appendChild(openCircle);
+
+            const openText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            openText.setAttribute("x", paddingLeft - 22);
+            openText.setAttribute("y", yPos + 4);
+            openText.setAttribute("text-anchor", "middle");
+            openText.setAttribute("fill", "#94a3b8");
+            openText.setAttribute("class", "text-xs font-bold font-mono");
+            openText.setAttribute("id", `node-${sIdx}-0-text`);
+            openText.textContent = getNoteName(str.openIdx);
+            openGroup.appendChild(openText);
+            
+            svg.appendChild(openGroup);
+
+            // Draw Core Note Target Cells Inside Neck Intervals
+            for (let f = 1; f <= TOTAL_FRETS; f++) {
+                const fx1 = fretPositions[f-1];
+                const fx2 = fretPositions[f];
+                const nodeX = fx1 + (fx2 - fx1) / 2;
+
+                const nodeGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                nodeGroup.setAttribute("class", "cursor-pointer select-none");
+                nodeGroup.addEventListener("click", () => handleFretboardClick(sIdx, f));
+
+                // Transparent hitzone anchor layer explicitly sized to catch clicks cleanly
+                const hitZone = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                hitZone.setAttribute("x", fx1);
+                hitZone.setAttribute("y", yPos - (stringGap/2));
+                hitZone.setAttribute("width", fx2 - fx1);
+                hitZone.setAttribute("height", stringGap);
+                hitZone.setAttribute("fill", "transparent");
+                nodeGroup.appendChild(hitZone);
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", nodeX);
+                circle.setAttribute("cy", yPos);
+                circle.setAttribute("r", "13");
+                circle.setAttribute("fill", "#0f172a");
+                circle.setAttribute("stroke", "#475569");
+                circle.setAttribute("stroke-width", "2");
+                circle.setAttribute("opacity", "0"); 
+                circle.setAttribute("id", `node-${sIdx}-f-${f}-bg`);
+                nodeGroup.appendChild(circle);
+
+                const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                txt.setAttribute("x", nodeX);
+                txt.setAttribute("y", yPos + 4);
+                txt.setAttribute("text-anchor", "middle");
+                txt.setAttribute("fill", "#ffffff");
+                txt.setAttribute("class", "text-[10px] font-bold font-mono");
+                txt.setAttribute("opacity", "0"); // ABSOLUTE BLIND TRAINING HIDDEN BY DEFAULT STYLE
+                txt.setAttribute("id", `node-${sIdx}-f-${f}-text`);
+                txt.textContent = getNoteName(str.openIdx + f);
+                nodeGroup.appendChild(txt);
+
+                svg.appendChild(nodeGroup);
+            }
+        });
+    }
+
+    function createDot(svg, cx, cy, fill) {
+        const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        dot.setAttribute("cx", cx);
+        dot.setAttribute("cy", cy);
+        dot.setAttribute("r", "6");
+        dot.setAttribute("fill", fill);
+        svg.appendChild(dot);
+    }
+
+    // Expose Shared Namespace Layer
+    window.BassEngine = {
+        state, SHARPS, FLATS, BASS_STRINGS, TOTAL_FRETS, CIRCLE_OF_FOURTHS, TRIAD_MODES_FLOW,
+        playBassTone, getNoteName, getPitchFrequency, findPitchIndexByName, renderFretboard
+    };
+})();
+</script>
+
+<script>
+(function() {
+    const E = window.BassEngine;
+
+    // Localized Component Element Selectors
+    const modeSelect = document.getElementById("modeSelect");
+    const accidentalsSelect = document.getElementById("accidentalsSelect");
+    const resetStatsBtn = document.getElementById("resetStatsBtn");
+    const targetPrompt = document.getElementById("targetPrompt");
+    const targetSubprompt = document.getElementById("targetSubprompt");
+    const promptLabel = document.getElementById("promptLabel");
+    const instructionText = document.getElementById("instructionText");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const accuracyBar = document.getElementById("accuracyBar");
+    const accuracyPercent = document.getElementById("accuracyPercent");
+    const streakCount = document.getElementById("streakCount");
+    const streakBadge = document.getElementById("streakBadge");
+    const routineName = document.getElementById("routineName");
+    const routineDetail = document.getElementById("routineDetail");
+    const feedbackBanner = document.getElementById("feedbackBanner");
+    const choiceContainer = document.getElementById("choiceContainer");
+    const choiceButtons = document.getElementById("choiceButtons");
+
+    function initApp() {
+        E.renderFretboard();
+        setupEventListeners();
+        routeNextTurn();
+    }
+
+    function setupEventListeners() {
+        modeSelect.addEventListener("change", (e) => {
+            E.state.mode = e.target.value;
+            resetTrackingMetrics();
+            routeNextTurn();
+        });
+
+        accidentalsSelect.addEventListener("change", (e) => {
+            E.state.notation = e.target.value;
+            E.renderFretboard();
+            routeNextTurn();
+        });
+
+        resetStatsBtn.addEventListener("click", () => {
+            resetTrackingMetrics();
+            showFeedback("Session history counters flushed.", "bg-slate-800 text-slate-300");
+            routeNextTurn();
+        });
+    }
+
+    function resetTrackingMetrics() {
+        E.state.score = { correct: 0, total: 0 };
+        E.state.streak = 0;
+        E.state.triadIndex = 0;
+        E.state.chordTypeIndex = 0;
+        E.state.activeStringIdx = 3; 
+        E.state.triadClickStep = 0;
+        updateDashboardViewports();
+    }
+
+    function updateDashboardViewports() {
+        scoreDisplay.innerHTML = `${E.state.score.correct} <span class="text-slate-500 text-lg font-medium">/ ${E.state.score.total}</span>`;
+        const percentage = E.state.score.total > 0 ? Math.round((E.state.score.correct / E.state.score.total) * 100) : 0;
+        accuracyBar.style.width = `${percentage}%`;
+        accuracyPercent.textContent = `${percentage}%`;
+        streakCount.textContent = E.state.streak;
+
+        // HIGH RESPONSE CONTROLS: Show/hide badge completely based on broken chains
+        if(E.state.streak > 0) {
+            streakBadge.classList.remove("hidden");
+            streakBadge.classList.add("inline-flex");
+        } else {
+            streakBadge.classList.add("hidden");
+            streakBadge.classList.remove("inline-flex");
+        }
+    }
+
+    function showFeedback(text, classes) {
+        feedbackBanner.className = `p-3 rounded-xl text-center text-sm font-semibold shadow-md block ${classes}`;
+        feedbackBanner.textContent = text;
+    }
+
+    function routeNextTurn() {
+        clearAllFretboardNodes();
+        choiceContainer.classList.add("hidden");
+        choiceButtons.innerHTML = "";
+        
+        // Stabilize layer banner defaults securely
+        feedbackBanner.className = "invisible rounded-xl p-3 text-center text-sm font-semibold shadow-md min-h-[44px]";
+        
+        if (E.state.mode === "findNote") {
+            generateFindNoteTurn();
+        } else if (E.state.mode === "nameNote") {
+            generateNameNoteTurn();
+        } else if (E.state.mode === "triads") {
+            generateTriadsRoutineTurn();
+        }
+        updateDashboardViewports();
+    }
+
+    function generateFindNoteTurn() {
+        promptLabel.textContent = "Target Note Prompt";
+        routineName.textContent = "Freestyle Sandbox";
+        routineDetail.textContent = "Locate requested pitch name target.";
+        instructionText.textContent = "Select the target pitch identity name located anywhere across the available 20 frets layout.";
+        
+        const notePool = E.state.notation === "sharps" ? E.SHARPS : E.FLATS;
+        const randomNote = notePool[Math.floor(Math.random() * 12)];
+        
+        E.state.currentTarget = { note: randomNote };
+        targetPrompt.textContent = randomNote;
+        targetSubprompt.textContent = "";
+    }
+
+    function generateNameNoteTurn() {
+        promptLabel.textContent = "Identify Active Position";
+        routineName.textContent = "Freestyle Sandbox";
+        routineDetail.textContent = "Identify pitch matching highlighted marker.";
+        instructionText.textContent = "Read highlighted placement coordinates carefully then input choice options.";
+        
+        const randomStringIdx = Math.floor(Math.random() * E.BASS_STRINGS.length);
+        const randomFret = Math.floor(Math.random() * (E.TOTAL_FRETS + 1));
+        const absolutePitchIdx = E.BASS_STRINGS[randomStringIdx].openIdx + randomFret;
+        const correctNoteName = E.getNoteName(absolutePitchIdx);
+        
+        E.state.currentTarget = {
+            stringIdx: randomStringIdx,
+            fret: randomFret,
+            correctNote: correctNoteName
+        };
+
+        targetPrompt.textContent = `String ${E.BASS_STRINGS[randomStringIdx].name}`;
+        targetSubprompt.textContent = `@ Fret ${randomFret}`;
+        
+        isolateHighlightFretboardNode(randomStringIdx, randomFret);
+        choiceContainer.classList.remove("hidden");
+        choiceContainer.classList.add("flex");
+
+        let choices = new Set([correctNoteName]);
+        const pool = E.state.notation === "sharps" ? E.SHARPS : E.FLATS;
+        while(choices.size < 4) {
+            choices.add(pool[Math.floor(Math.random() * 12)]);
+        }
+        
+        Array.from(choices).sort(() => Math.random() - 0.5).forEach(choice => {
+            const btn = document.createElement("button");
+            btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold px-5 py-2.5 rounded-xl border border-slate-700/60 text-sm min-w-[70px] transition-all active:scale-95";
+            btn.textContent = choice;
+            btn.addEventListener("click", () => {
+                if(choice === correctNoteName) {
+                    showFeedback(`Fantastic accuracy! Pitched position resolves securely to note: ${choice}.`, "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30");
+                    E.state.score.correct++;
+                    E.state.score.total++;
+                    E.state.streak++;
+                    setTimeout(routeNextTurn, 1200);
+                } else {
+                    showFeedback(`Incorrect matching input option selection. Played position was note: ${correctNoteName}.`, "bg-rose-950/80 text-rose-400 border border-rose-500/30");
+                    E.state.score.total++;
+                    E.state.streak = 0;
+                    setTimeout(routeNextTurn, 1500);
+                }
+                updateDashboardViewports();
+            });
+            choiceButtons.appendChild(btn);
+        });
+    }
+
+    function generateTriadsRoutineTurn() {
+        promptLabel.textContent = "Arpeggiate Single String Triad Sequence";
+
+        // Hämta hemtonart (t.ex C) och skalsteg (I, vi, vii°)
+        const keyCenterRoot = E.CIRCLE_OF_FOURTHS[E.state.triadIndex];
+        const activeChordType = E.TRIAD_MODES_FLOW[E.state.chordTypeIndex];
+        const targetString = E.BASS_STRINGS[E.state.activeStringIdx];
+
+        // Räkna ut den faktiska diatoniska grundtonen (t.ex C + 9 halvtoner = A)
+        const keyCenterIdx = E.findPitchIndexByName(keyCenterRoot);
+        const actualRootIdx = (keyCenterIdx + activeChordType.rootOffset) % 12;
+        
+        const flatKeys = ["F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"];
+        let actualRootName = E.getNoteName(actualRootIdx);
+
+        if (flatKeys.includes(keyCenterRoot)) {
+            const normalized = ((actualRootIdx % 12) + 12) % 12;
+            actualRootName = E.FLATS[normalized]; // Hämtar Bb istället för A#
+        }
+
+        routineName.textContent = `Key Center: ${keyCenterRoot}`;
+        routineDetail.textContent = `Circle of Fourths loop step [${E.state.triadIndex + 1}/15]`;
+
+        // Visar t.ex: A minor triad
+        targetPrompt.textContent = `${actualRootName} ${activeChordType.label}`;
+        targetSubprompt.textContent = `on String ${targetString.name}`;
+
+        // Skapa tonerna i treklangen utifrån den diatoniska grundtonen
+        const relativeTargetNotes = activeChordType.offsets.map(offset => E.getNoteName(actualRootIdx + offset));
+
+        let actionablePositions = [];
+        for (let f = 0; f <= E.TOTAL_FRETS; f++) {
+            const noteAtPosition = E.getNoteName(targetString.openIdx + f);
+            if (relativeTargetNotes.includes(noteAtPosition)) {
+                actionablePositions.push({
+                    fret: f,
+                    note: noteAtPosition
+                });
+            }
+        }
+
+        actionablePositions.sort((a, b) => a.fret - b.fret);
+
+        E.state.triadClickStep = 0;
+        E.state.triadTargetPositions = actionablePositions;
+
+        instructionText.textContent = `Arpeggiate the target triad notes (${relativeTargetNotes.join(", ")}) up the string from memory (lowest to highest).`;
+    }
+
+    // Dynamic Click Master Router Handler (REPAIRED TO ENSURE STABLE INTERACTIVITY STEPS)
+    window.handleFretboardClick = function(stringIdx, fret) {
+        const selectedString = E.BASS_STRINGS[stringIdx];
+        const noteName = E.getNoteName(selectedString.openIdx + fret);
+        const freq = E.getPitchFrequency(selectedString.openIdx, fret, selectedString.octave);
+        
+        E.playBassTone(freq);
+        if (E.state.mode !== "triads") pulseFretboardNode(stringIdx, fret);
+
+        if (E.state.mode === "findNote") {
+            if (noteName === E.state.currentTarget.note) {
+                showFeedback(`Excellent! Match hit successfully on String ${selectedString.name} at fret position ${fret}.`, "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30");
+                E.state.score.correct++;
+                E.state.score.total++;
+                E.state.streak++;
+                setTimeout(routeNextTurn, 1200);
+            } else {
+                showFeedback(`Incorrect node selection. Target was note ${E.state.currentTarget.note}. Played pitch resolved as ${noteName}.`, "bg-rose-950/80 text-rose-400 border border-rose-500/30");
+                E.state.score.total++;
+                E.state.streak = 0;
+                setTimeout(routeNextTurn, 1500);
+            }
+            updateDashboardViewports();
+        } else if (E.state.mode === "triads") {
+            if (stringIdx !== E.state.activeStringIdx) {
+                showFeedback("Invalid Action: Must stick strictly to active exercise string parameters.", "bg-amber-900/80 text-amber-200 border border-amber-700/50");
+                return;
+            }
+            
+            const expectedNextTarget = E.state.triadTargetPositions[E.state.triadClickStep];
+            
+            if (fret === expectedNextTarget.fret) {
+                lockColorHighlightNode(stringIdx, fret, "#10b981");
+                E.state.triadClickStep++;
+
+                if (E.state.triadClickStep === E.state.triadTargetPositions.length) {
+                    showFeedback("String Arpeggio Completed successfully!", "bg-emerald-950 text-emerald-400 border border-emerald-500/30");
+
+                    // 1. Kör färdigt alla strängar (E -> A -> D -> G) för det aktuella ackordet
+                    if (E.state.activeStringIdx > 0) {
+                        E.state.activeStringIdx--;
+                    } else {
+                        // 2. När strängarna är slut, gå till nästa diatoniska ackord (I -> vi -> vii°)
+                        E.state.activeStringIdx = 3;
+                        E.state.chordTypeIndex++;
+
+                        // 3. När alla 3 ackordtyper är klara, byt hemtonart i kvintcirkeln
+                        if (E.state.chordTypeIndex === E.TRIAD_MODES_FLOW.length) {
+                            E.state.chordTypeIndex = 0;
+                            E.state.triadIndex = (E.state.triadIndex + 1) % E.CIRCLE_OF_FOURTHS.length;
+                        }
+                    }
+
+                    E.state.score.correct++;
+                    E.state.score.total++;
+                    E.state.streak++;
+                    setTimeout(routeNextTurn, 1000);
+                }
+            }
+ else {
+                // REPAIRED CONTROL FLOW: Incorrect steps accurately drop streaks and reload turn states cleanly
+                showFeedback("Sequence Broken! Resetting this string pattern loop.", "bg-rose-950 text-rose-400 border border-rose-500/30");
+                E.state.streak = 0;
+                E.state.score.total++;
+                updateDashboardViewports();
+                setTimeout(routeNextTurn, 1500);
+            }
+            updateDashboardViewports();
+        }
+    };
+
+    function clearAllFretboardNodes() {
+        for (let s = 0; s < E.BASS_STRINGS.length; s++) {
+            const openBg = document.getElementById(`node-${s}-0-bg`), openTxt = document.getElementById(`node-${s}-0-text`);
+            if(openBg) {
+                openBg.setAttribute("fill", "#0f172a");
+                openBg.setAttribute("stroke", "#334155");
+                openBg.setAttribute("stroke-width", "2");
+            }
+            if(openTxt) openTxt.setAttribute("fill", "#94a3b8");
+
+            for (let f = 1; f <= E.TOTAL_FRETS; f++) {
+                const bg = document.getElementById(`node-${s}-f-${f}-bg`), txt = document.getElementById(`node-${s}-f-${f}-text`);
+                if (bg && txt) {
+                    bg.setAttribute("opacity", "0");
+                    bg.setAttribute("fill", "#0f172a");
+                    bg.setAttribute("stroke", "#475569");
+                    bg.setAttribute("stroke-width", "2");
+                    txt.setAttribute("opacity", "0");
+                }
+            }
+        }
+    }
+
+    function isolateHighlightFretboardNode(sIdx, fret) {
+        const bg = document.getElementById(fret === 0 ? `node-${sIdx}-0-bg` : `node-${sIdx}-f-${fret}-bg`), txt = document.getElementById(fret === 0 ? `node-${sIdx}-0-text` : `node-${sIdx}-f-${fret}-text`);
+        if (bg && txt) {
+            bg.setAttribute("opacity", "1");
+            bg.setAttribute("fill", "#1e293b");
+            bg.setAttribute("stroke", "#38bdf8"); 
+            bg.setAttribute("stroke-width", "2.5");
+            txt.setAttribute("opacity", "0"); 
+        }
+    }
+
+    function lockColorHighlightNode(sIdx, fret, colorHex) {
+        const bg = document.getElementById(fret === 0 ? `node-${sIdx}-0-bg` : `node-${sIdx}-f-${fret}-bg`), txt = document.getElementById(fret === 0 ? `node-${sIdx}-0-text` : `node-${sIdx}-f-${fret}-text`);
+        if(bg && txt) {
+            bg.setAttribute("opacity", "1");
+            bg.setAttribute("fill", colorHex);
+            bg.setAttribute("stroke", colorHex);
+            txt.setAttribute("opacity", "0"); // LABELS STAY COVERT AS SPECIFIED IN BLIND MODES
+        }
+    }
+
+    function pulseFretboardNode(sIdx, fret) {
+        const bg = document.getElementById(fret === 0 ? `node-${sIdx}-0-bg` : `node-${sIdx}-f-${fret}-bg`);
+        if (bg) {
+            const nativeBg = bg.getAttribute("fill"), nativeStroke = bg.getAttribute("stroke"), nativeOpacity = bg.getAttribute("opacity");
+            bg.setAttribute("opacity", "1");
+            bg.setAttribute("fill", "#e2e8f0");
+            bg.setAttribute("stroke", "#ffffff");
+
+            setTimeout(() => {
+                bg.setAttribute("fill", nativeBg || "#0f172a");
+                bg.setAttribute("stroke", nativeStroke || "#475569");
+                bg.setAttribute("opacity", nativeOpacity || "0");
+            }, 250);
+        }
+    }
+
+    window.addEventListener("DOMContentLoaded", initApp);
+})();
+</script>
+</body>
+</html>
