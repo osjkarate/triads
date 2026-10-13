@@ -248,13 +248,13 @@
             const x2 = fretPositions[f];
             const midX = x1 + (x2 - x1) / 2;
             const midY = paddingTop + boardHeight / 2;
-            
+
             if (f === 12) {
                 const offset = 22;
-                createDot(svg, midX, midY - offset, "#334155");
-                createDot(svg, midX, my = midY + offset, "#334155");
+                createDot(svg, midX, midY - offset, "#cbd5e1");
+                createDot(svg, midX, midY + offset, "#cbd5e1");
             } else {
-                createDot(svg, midX, midY, "#334155");
+                createDot(svg, midX, midY, "#cbd5e1");
             }
         });
 
@@ -265,9 +265,9 @@
             line.setAttribute("y1", paddingTop);
             line.setAttribute("x2", fretPositions[i]);
             line.setAttribute("y2", paddingTop + boardHeight);
-            
+
             if (i === 0) {
-                line.setAttribute("stroke", "#94a3b8"); 
+                line.setAttribute("stroke", "#94a3b8");
                 line.setAttribute("stroke-width", "5");
             } else {
                 line.setAttribute("stroke", "#475569");
@@ -286,7 +286,7 @@
             line.setAttribute("x2", width - 20);
             line.setAttribute("y2", yPos);
             line.setAttribute("stroke", "#cbd5e1");
-            line.setAttribute("stroke-width", 2 + (3 - sIdx) * 0.8); 
+            line.setAttribute("stroke-width", 2 + (3 - sIdx) * 0.8);
             svg.appendChild(line);
 
             // Left Open String Hitting Zones
@@ -313,7 +313,7 @@
             openText.setAttribute("id", `node-${sIdx}-0-text`);
             openText.textContent = getNoteName(str.openIdx);
             openGroup.appendChild(openText);
-            
+
             svg.appendChild(openGroup);
 
             // Draw Core Note Target Cells Inside Neck Intervals
@@ -342,7 +342,7 @@
                 circle.setAttribute("fill", "#0f172a");
                 circle.setAttribute("stroke", "#475569");
                 circle.setAttribute("stroke-width", "2");
-                circle.setAttribute("opacity", "0"); 
+                circle.setAttribute("opacity", "0");
                 circle.setAttribute("id", `node-${sIdx}-f-${f}-bg`);
                 nodeGroup.appendChild(circle);
 
@@ -433,7 +433,7 @@
         E.state.streak = 0;
         E.state.triadIndex = 0;
         E.state.chordTypeIndex = 0;
-        E.state.activeStringIdx = 3; 
+        E.state.activeStringIdx = 3;
         E.state.triadClickStep = 0;
         updateDashboardViewports();
     }
@@ -485,10 +485,10 @@
         routineName.textContent = "Freestyle Sandbox";
         routineDetail.textContent = "Locate requested pitch name target.";
         instructionText.textContent = "Select the target pitch identity name located anywhere across the available 20 frets layout.";
-        
+
         const notePool = E.state.notation === "sharps" ? E.SHARPS : E.FLATS;
         const randomNote = notePool[Math.floor(Math.random() * 12)];
-        
+
         E.state.currentTarget = { note: randomNote };
         targetPrompt.textContent = randomNote;
         targetSubprompt.textContent = "";
@@ -499,12 +499,12 @@
         routineName.textContent = "Freestyle Sandbox";
         routineDetail.textContent = "Identify pitch matching highlighted marker.";
         instructionText.textContent = "Read highlighted placement coordinates carefully then input choice options.";
-        
+
         const randomStringIdx = Math.floor(Math.random() * E.BASS_STRINGS.length);
         const randomFret = Math.floor(Math.random() * (E.TOTAL_FRETS + 1));
         const absolutePitchIdx = E.BASS_STRINGS[randomStringIdx].openIdx + randomFret;
         const correctNoteName = E.getNoteName(absolutePitchIdx);
-        
+
         E.state.currentTarget = {
             stringIdx: randomStringIdx,
             fret: randomFret,
@@ -513,7 +513,7 @@
 
         targetPrompt.textContent = `String ${E.BASS_STRINGS[randomStringIdx].name}`;
         targetSubprompt.textContent = `@ Fret ${randomFret}`;
-        
+
         isolateHighlightFretboardNode(randomStringIdx, randomFret);
         choiceContainer.classList.remove("hidden");
         choiceContainer.classList.add("flex");
@@ -523,7 +523,7 @@
         while(choices.size < 4) {
             choices.add(pool[Math.floor(Math.random() * 12)]);
         }
-        
+
         Array.from(choices).sort(() => Math.random() - 0.5).forEach(choice => {
             const btn = document.createElement("button");
             btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold px-5 py-2.5 rounded-xl border border-slate-700/60 text-sm min-w-[70px] transition-all active:scale-95";
@@ -558,7 +558,7 @@
         // Räkna ut den faktiska diatoniska grundtonen (t.ex C + 9 halvtoner = A)
         const keyCenterIdx = E.findPitchIndexByName(keyCenterRoot);
         const actualRootIdx = (keyCenterIdx + activeChordType.rootOffset) % 12;
-        
+
         const flatKeys = ["F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"];
         let actualRootName = E.getNoteName(actualRootIdx);
 
@@ -601,7 +601,7 @@
         const selectedString = E.BASS_STRINGS[stringIdx];
         const noteName = E.getNoteName(selectedString.openIdx + fret);
         const freq = E.getPitchFrequency(selectedString.openIdx, fret, selectedString.octave);
-        
+
         E.playBassTone(freq);
         if (E.state.mode !== "triads") pulseFretboardNode(stringIdx, fret);
 
@@ -694,9 +694,9 @@
         if (bg && txt) {
             bg.setAttribute("opacity", "1");
             bg.setAttribute("fill", "#1e293b");
-            bg.setAttribute("stroke", "#38bdf8"); 
+            bg.setAttribute("stroke", "#38bdf8");
             bg.setAttribute("stroke-width", "2.5");
-            txt.setAttribute("opacity", "0"); 
+            txt.setAttribute("opacity", "0");
         }
     }
 
