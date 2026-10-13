@@ -18,50 +18,17 @@
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased select-none">
 
-    <!-- Header Block -->
-    <header class="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                    <svg class="w-6 h-6 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
-                </div>
-                <div>
-                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-slate-50 to-slate-300 bg-clip-text text-transparent">LowEnd Master</h1>
-                    <p class="text-xs text-emerald-400 font-semibold tracking-wider uppercase mono">Blind 20-Fret Engine</p>
-                </div>
-            </div>
-            
-            <!-- Controls Section -->
-            <div class="flex flex-wrap items-center gap-3">
-                <select id="modeSelect" class="bg-slate-900 border border-slate-700/60 rounded-xl px-4 py-2 text-sm font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors shadow-inner">
-                    <option value="triads">Mode: Single String Triads</option>
-                    <option value="findNote">Mode: Find the Note</option>
-                    <option value="nameNote">Mode: Name the Note</option>
-                </select>
-                <select id="accidentalsSelect" class="bg-slate-900 border border-slate-700/60 rounded-xl px-4 py-2 text-sm font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors shadow-inner">
-                    <option value="sharps">Notation: ♯ Sharps</option>
-                    <option value="flats">Notation: ♭ Flats</option>
-                </select>
-                <button id="resetStatsBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all border border-slate-700/40 hover:border-slate-600 flex items-center gap-2">
-                    Reset Session
-                </button>
-            </div>
-        </div>
-    </header>
-
     <!-- Main Game Workspace -->
-<main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-1 flex flex-col gap-6 justify-center">
-
-        <!-- 1. Interactive Fretboard Visual Frame Container (NOW AT THE TOP) -->
+<main class="max-w-7xl w-full mx-auto px-4 md:px-6 pt-1 pb-6 flex-1 flex flex-col gap-3 justify-start">
+    <!-- 1. Dynamic Feedback Overlay Banner -->
+        <div id="feedbackBanner" class="order-1 invisible text-center text-[10px] font-bold tracking-wider uppercase h-3 transition-all duration-150"></div>
+        <!-- 2. Interactive Fretboard Visual Frame Container -->
         <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-3 md:p-6 shadow-2xl relative w-full overflow-hidden">
             <div class="w-full relative" id="fretboardContainer">
                 <!-- Scalable SVG Fretboard Component Object Render Engine -->
                 <svg id="fretboardSvg" viewBox="0 0 1400 240" class="w-full h-auto block drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]"></svg>
             </div>
         </div>
-
-        <!-- 2. Dynamic Feedback Overlay Banner -->
-        <div id="feedbackBanner" class="invisible rounded-xl p-3 text-center text-sm font-semibold shadow-md min-h-[44px] transition-all duration-300"></div>
 
         <!-- 3. Entire Dashboard Block (REPOSITIONED BELOW THE FRETBOARD) -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -121,10 +88,22 @@
 
     </main>
 
-    <!-- UI Footer Branding -->
-    <footer class="border-t border-slate-900/60 bg-slate-950/80 py-4 px-6 text-center text-xs text-slate-500 mono">
-        LowEnd Master Framework v2.6.4 • Stable 20-Fret Interactivity System
-    </footer>
+    <div class="border-t border-slate-800/80 bg-slate-900 px-6 py-3 relative z-40">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-start gap-2">
+            <select id="modeSelect" class="bg-slate-900 border border-slate-700/60 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors shadow-inner">
+                <option value="triads">Mode: Single String Triads</option>
+                <option value="findNote">Mode: Find the Note</option>
+                <option value="nameNote">Mode: Name the Note</option>
+            </select>
+            <select id="accidentalsSelect" class="bg-slate-900 border border-slate-700/60 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors shadow-inner">
+                <option value="sharps">Notation: ♯ Sharps</option>
+                <option value="flats">Notation: ♭ Flats</option>
+            </select>
+            <button id="resetStatsBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-2 py-1 rounded-md text-[11px] font-medium transition-all border border-slate-700/40 hover:border-slate-600 flex items-center gap-1.5">
+                Reset Session
+            </button>
+        </div>
+    </div>
 
 <script>
 (function() {
@@ -476,8 +455,9 @@
         }
     }
 
-    function showFeedback(text, classes) {
-        feedbackBanner.className = `p-3 rounded-xl text-center text-sm font-semibold shadow-md block ${classes}`;
+    function showFeedback(text, bgClass) {
+        // Strict mapping tracking match template settings without order classes
+        feedbackBanner.className = `visible text-center text-[10px] font-black tracking-wider uppercase h-4 px-2 py-0.5 rounded shadow-sm inline-block mx-auto ${bgClass}`;
         feedbackBanner.textContent = text;
     }
 
@@ -485,10 +465,11 @@
         clearAllFretboardNodes();
         choiceContainer.classList.add("hidden");
         choiceButtons.innerHTML = "";
-        
-        // Stabilize layer banner defaults securely
-        feedbackBanner.className = "invisible rounded-xl p-3 text-center text-sm font-semibold shadow-md min-h-[44px]";
-        
+
+        // Return baseline parameters back to invisible state cleanly
+        feedbackBanner.className = "invisible text-center text-[10px] font-black tracking-wider uppercase h-4 px-2 py-0.5 rounded shadow-sm inline-block mx-auto";
+        feedbackBanner.textContent = "";
+
         if (E.state.mode === "findNote") {
             generateFindNoteTurn();
         } else if (E.state.mode === "nameNote") {
@@ -548,14 +529,14 @@
             btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold px-5 py-2.5 rounded-xl border border-slate-700/60 text-sm min-w-[70px] transition-all active:scale-95";
             btn.textContent = choice;
             btn.addEventListener("click", () => {
-                if(choice === correctNoteName) {
-                    showFeedback(`Fantastic accuracy! Pitched position resolves securely to note: ${choice}.`, "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30");
+                if (choice === correctNoteName) {
+                    showFeedback(`✓ Correct: ${choice}`, "bg-emerald-500 text-slate-950");
                     E.state.score.correct++;
                     E.state.score.total++;
                     E.state.streak++;
                     setTimeout(routeNextTurn, 1200);
                 } else {
-                    showFeedback(`Incorrect matching input option selection. Played position was note: ${correctNoteName}.`, "bg-rose-950/80 text-rose-400 border border-rose-500/30");
+                    showFeedback(`✗ Wrong: Was ${correctNoteName}`, "bg-rose-500 text-slate-950");
                     E.state.score.total++;
                     E.state.streak = 0;
                     setTimeout(routeNextTurn, 1500);
@@ -626,13 +607,13 @@
 
         if (E.state.mode === "findNote") {
             if (noteName === E.state.currentTarget.note) {
-                showFeedback(`Excellent! Match hit successfully on String ${selectedString.name} at fret position ${fret}.`, "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30");
+                showFeedback(`✓ Correct: Hit ${noteName}`, "bg-emerald-500 text-slate-950");
                 E.state.score.correct++;
                 E.state.score.total++;
                 E.state.streak++;
                 setTimeout(routeNextTurn, 1200);
             } else {
-                showFeedback(`Incorrect node selection. Target was note ${E.state.currentTarget.note}. Played pitch resolved as ${noteName}.`, "bg-rose-950/80 text-rose-400 border border-rose-500/30");
+                showFeedback(`✗ Wrong: Played ${noteName} (Target: ${E.state.currentTarget.note})`, "bg-rose-500 text-slate-950");
                 E.state.score.total++;
                 E.state.streak = 0;
                 setTimeout(routeNextTurn, 1500);
@@ -640,31 +621,32 @@
             updateDashboardViewports();
         } else if (E.state.mode === "triads") {
             if (stringIdx !== E.state.activeStringIdx) {
-                showFeedback("Invalid Action: Must stick strictly to active exercise string parameters.", "bg-amber-900/80 text-amber-200 border border-amber-700/50");
+                showFeedback("Invalid Action: Stick to active string parameters.", "bg-amber-500 text-slate-950");
                 return;
             }
-            
+
             const expectedNextTarget = E.state.triadTargetPositions[E.state.triadClickStep];
-            
+
             if (fret === expectedNextTarget.fret) {
                 lockColorHighlightNode(stringIdx, fret, "#10b981");
                 E.state.triadClickStep++;
 
                 if (E.state.triadClickStep === E.state.triadTargetPositions.length) {
-                    showFeedback("String Arpeggio Completed successfully!", "bg-emerald-950 text-emerald-400 border border-emerald-500/30");
+                    showFeedback("✓ Arpeggio Complete!", "bg-emerald-500 text-slate-950");
 
-                    // 1. Kör färdigt alla strängar (E -> A -> D -> G) för det aktuella ackordet
                     if (E.state.activeStringIdx > 0) {
                         E.state.activeStringIdx--;
                     } else {
-                        // 2. När strängarna är slut, gå till nästa diatoniska ackord (I -> vi -> vii°)
                         E.state.activeStringIdx = 3;
-                        E.state.chordTypeIndex++;
+                        E.state.triadIndex++;
 
-                        // 3. När alla 3 ackordtyper är klara, byt hemtonart i kvintcirkeln
-                        if (E.state.chordTypeIndex === E.TRIAD_MODES_FLOW.length) {
-                            E.state.chordTypeIndex = 0;
-                            E.state.triadIndex = (E.state.triadIndex + 1) % E.CIRCLE_OF_FOURTHS.length;
+                        if (E.state.triadIndex === E.CIRCLE_OF_FOURTHS.length) {
+                            E.state.triadIndex = 0;
+                            E.state.chordTypeIndex++;
+
+                            if (E.state.chordTypeIndex === E.TRIAD_MODES_FLOW.length) {
+                                E.state.chordTypeIndex = 0;
+                            }
                         }
                     }
 
@@ -673,10 +655,8 @@
                     E.state.streak++;
                     setTimeout(routeNextTurn, 1000);
                 }
-            }
- else {
-                // REPAIRED CONTROL FLOW: Incorrect steps accurately drop streaks and reload turn states cleanly
-                showFeedback("Sequence Broken! Resetting this string pattern loop.", "bg-rose-950 text-rose-400 border border-rose-500/30");
+            } else {
+                showFeedback("✗ Sequence Broken!", "bg-rose-500 text-slate-950");
                 E.state.streak = 0;
                 E.state.score.total++;
                 updateDashboardViewports();
